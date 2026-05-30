@@ -159,16 +159,15 @@ Verification performed:
 - The OpenBLAS-backed JAGS build passes `wasm/smoke.js`.
 - The scaled classic BUGS benchmark passes execution coverage with
   `rjags_ok=47/47` and `wasm_ok=47/47`
-  (`classic-bugs-benchmark-20260530-223948.csv`).
+  (`classic-bugs-benchmark-20260530-230633.csv`).
 - At the short benchmark scale, 42/47 cases are comparable at `max_abs_z <= 2`.
   A longer targeted rerun of the five outliers improved three of them; the
   remaining `epil` cases are also outliers with the old fallback and are more
   likely short-chain Monte Carlo comparison noise than BLAS/LAPACK failures.
 
-The only remaining linker warning is `xerbla_`: OpenBLAS' BLAS error path uses
-an `int` signature, while the supplemental LAPACK archive provides a `void`
-Fortran-subroutine signature. This should not affect valid BLAS calls, but it is
-worth eliminating before treating the OpenBLAS backend as release quality.
+The previous `xerbla_` linker warning has been eliminated. The supplemental
+archive no longer defines `xerbla_`; OpenBLAS provides that error hook, and the
+supplemental LAPACK sources leave `xerbla_` declarations on OpenBLAS' ABI.
 
 ## Risk notes
 

@@ -80,7 +80,7 @@ is_allowed_external() {
 source_for_routine() {
     local routine="$1"
     if [ "${routine}" = "xerbla" ]; then
-        printf '%s\n' "${xerbla_src}"
+        return 0
     elif [ -f "${src_dir}/${routine}.c" ]; then
         printf '%s\n' "${src_dir}/${routine}.c"
     elif [ -f "${install_src_dir}/${routine}.c" ]; then
@@ -119,8 +119,8 @@ compile_routine() {
                     $is_subroutine{$name} = 1;
                 }
             }
-            s@/\* Subroutine \*/ int@/* Subroutine */ void@g;
-            s@extern /\* Subroutine \*/ int@extern /* Subroutine */ void@g;
+            s@/\* Subroutine \*/ int\s+([A-Za-z][A-Za-z0-9_]*_)\s*\(@$is_subroutine{$1} ? "/* Subroutine */ void $1(" : $&@ge;
+            s@extern /\* Subroutine \*/ int\s+([A-Za-z][A-Za-z0-9_]*_)\s*\(@$is_subroutine{$1} ? "extern /* Subroutine */ void $1(" : $&@ge;
             s@extern int\s+([A-Za-z][A-Za-z0-9_]*_)\s*\(@$is_subroutine{$1} ? "extern void $1(" : $&@ge;
             if ($ENV{"CONVERT_RETURNS"} eq "1") {
                 s@return 0;@return;@g;
@@ -143,7 +143,6 @@ compile_routine() {
 defined_file="${build_dir}/defined-symbols.txt"
 undefined_file="${build_dir}/undefined-symbols.txt"
 subroutine_names_file="${build_dir}/subroutine-names.txt"
-xerbla_src="${build_dir}/xerbla_override.c"
 queue=()
 compiled=()
 objects=()
@@ -151,24 +150,9 @@ objects=()
 {
     find "${src_dir}" "${install_src_dir}" -maxdepth 1 -name '*.c' -print 2>/dev/null |
         while IFS= read -r candidate; do
-            routine="$(basename "${candidate}" .c)"
-            if grep -Eq "/\\* Subroutine \\*/ (int|void) ${routine}_" "${candidate}"; then
-                printf '%s_\n' "${routine}"
-            fi
+            perl -ne 'while (m@/\* Subroutine \*/ (?:int|void)\s+([A-Za-z][A-Za-z0-9_]*_)\s*\(@g) { print "$1\n"; }' "${candidate}"
         done
-    printf 'xerbla_\n'
-} | sort -u > "${subroutine_names_file}"
-
-cat > "${xerbla_src}" <<'EOF'
-#include <stdio.h>
-
-void xerbla_(char *srname, int *info, int srname_len)
-{
-    (void)srname;
-    (void)info;
-    (void)srname_len;
-}
-EOF
+} | grep -v '^xerbla_$' | sort -u > "${subroutine_names_file}"
 
 for root in ${roots}; do
     queue+=("${root}")
