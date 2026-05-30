@@ -61,6 +61,33 @@ vector and matrix operations, and the fallback now includes small dense
 implementations for the LAPACK calls needed by the classic BUGS multivariate
 normal, Wishart, matrix inverse, and log-determinant examples.
 
-This is still a proof-of-concept backend. For larger models, better numerical
-coverage, and stronger performance, replace the fallback with a maintained WASM
-BLAS/LAPACK build.
+The default backend remains the local fallback because it is self-contained.
+There is also an opt-in OpenBLAS-backed backend:
+
+```sh
+cd /Users/rasmus.b/Desktop/web-jags/JAGS-4.3.2
+wasm/tools/build-openblas-wasm.sh
+wasm/tools/build-lapack-extra-wasm.sh
+wasm/tools/check-openblas-symbols.sh \
+  wasm/third_party/OpenBLAS/libopenblas_wasm128-r0.3.33.dev.a \
+  wasm/build/libjags_lapack_extra.a
+wasm/tools/run-lapack-extra-smoke.sh
+
+env PATH=/opt/homebrew/bin:$PATH emcmake cmake -S wasm -B wasm/build-openblas -G Ninja \
+  -DJAGS_WASM_NUMERIC_BACKEND=openblas \
+  -DJAGS_WASM_OPENBLAS_LIB=/Users/rasmus.b/Desktop/web-jags/JAGS-4.3.2/wasm/third_party/OpenBLAS/libopenblas_wasm128-r0.3.33.dev.a \
+  -DJAGS_WASM_LAPACK_EXTRA_LIB=/Users/rasmus.b/Desktop/web-jags/JAGS-4.3.2/wasm/build/libjags_lapack_extra.a
+env PATH=/opt/homebrew/bin:$PATH cmake --build wasm/build-openblas -j4
+```
+
+OpenBLAS' `NOFORTRAN=1` WASM build provides the BLAS layer plus some LAPACK
+routines, but not the full JAGS base+bugs surface. `build-lapack-extra-wasm.sh`
+therefore compiles the transitive netlib C-LAPACK subset needed by JAGS from
+OpenBLAS' `lapack-netlib` sources and normalizes translated Fortran subroutines
+to a `void` ABI so they are safe to call from WebAssembly.
+
+The OpenBLAS backend has been smoke-tested and benchmarked against the 47
+classic BUGS cases with `rjags_ok=47/47` and `wasm_ok=47/47` at the scaled
+benchmark settings. This is a substantially better production direction than
+extending the handwritten fallback, but it is still a verified JAGS subset, not
+a bundled complete LAPACK distribution.

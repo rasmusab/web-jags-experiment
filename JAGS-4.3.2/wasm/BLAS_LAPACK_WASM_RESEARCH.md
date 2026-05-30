@@ -121,6 +121,55 @@ The most credible production path is:
 This gives much higher confidence than extending the local fallback one routine
 at a time, while keeping the build browser-compatible.
 
+## Executed spike
+
+The OpenBLAS WASM spike was executed locally with:
+
+```sh
+TARGET=WASM128_GENERIC CC=emcc HOSTCC=cc AR=emar RANLIB=emranlib \
+  NOFORTRAN=1 NO_LAPACKE=1 USE_THREAD=0 NUM_THREADS=1 DYNAMIC_ARCH=0
+```
+
+Result: OpenBLAS alone is not sufficient for JAGS base+bugs. Its WASM archive
+exports 13 of the 18 active symbols:
+
+```text
+present: ddot_ dcopy_ dscal_ daxpy_ dgemv_ dgemm_ dsyr_ dsymm_
+         dsyrk_ dtrmm_ dgesv_ dpotrf_ dtrtri_
+missing: dlange_ dsyev_ dsysv_ dposv_ dpotri_
+```
+
+The workable solution is OpenBLAS for BLAS plus a generated supplemental
+C-LAPACK archive for the transitive JAGS LAPACK subset. The supplemental archive
+is built by `tools/build-lapack-extra-wasm.sh` from OpenBLAS'
+`lapack-netlib/SRC` and `lapack-netlib/INSTALL` C sources.
+
+Important WebAssembly-specific issue: the f2c/OpenBLAS C sources mix `int` and
+`void` signatures for translated Fortran subroutines. Native linking tolerates
+this, but WebAssembly function types are strict and the mismatch caused runtime
+`unreachable` traps in `dpotri_`. The supplement builder now patches copied
+sources so translated subroutines use the `void` ABI expected by JAGS.
+
+Verification performed:
+
+- `tools/check-openblas-symbols.sh` reports 18/18 required symbols when run on
+  the OpenBLAS archive plus `wasm/build/libjags_lapack_extra.a`.
+- `tools/lapack-extra-smoke.c` calls `dpotrf_`, `dpotri_`, `dsyev_`, and
+  `dgesv_` directly through a small Emscripten program; it passes.
+- The OpenBLAS-backed JAGS build passes `wasm/smoke.js`.
+- The scaled classic BUGS benchmark passes execution coverage with
+  `rjags_ok=47/47` and `wasm_ok=47/47`
+  (`classic-bugs-benchmark-20260530-223948.csv`).
+- At the short benchmark scale, 42/47 cases are comparable at `max_abs_z <= 2`.
+  A longer targeted rerun of the five outliers improved three of them; the
+  remaining `epil` cases are also outliers with the old fallback and are more
+  likely short-chain Monte Carlo comparison noise than BLAS/LAPACK failures.
+
+The only remaining linker warning is `xerbla_`: OpenBLAS' BLAS error path uses
+an `int` signature, while the supplemental LAPACK archive provides a `void`
+Fortran-subroutine signature. This should not affect valid BLAS calls, but it is
+worth eliminating before treating the OpenBLAS backend as release quality.
+
 ## Risk notes
 
 - Complete LAPACK is probably unnecessary for JAGS base+bugs. A verified

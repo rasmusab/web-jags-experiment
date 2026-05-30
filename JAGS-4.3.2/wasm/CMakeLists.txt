@@ -8,6 +8,14 @@ set(CMAKE_C_STANDARD 99)
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+set(JAGS_WASM_NUMERIC_BACKEND "fallback" CACHE STRING
+    "Numerical backend to use: fallback or openblas")
+set_property(CACHE JAGS_WASM_NUMERIC_BACKEND PROPERTY STRINGS fallback openblas)
+set(JAGS_WASM_OPENBLAS_LIB "" CACHE FILEPATH
+    "Path to an Emscripten-built OpenBLAS static archive")
+set(JAGS_WASM_LAPACK_EXTRA_LIB "" CACHE FILEPATH
+    "Path to the supplemental C-LAPACK archive for OpenBLAS WASM builds")
+
 function(append_sources output)
     foreach(dir IN LISTS ARGN)
 	file(GLOB dir_sources CONFIGURE_DEPENDS
@@ -18,9 +26,27 @@ function(append_sources output)
     set(${output} ${${output}} ${sources} PARENT_SCOPE)
 endfunction()
 
+set(JAGS_WASM_NUMERIC_SOURCES)
+if(JAGS_WASM_NUMERIC_BACKEND STREQUAL "fallback")
+    list(APPEND JAGS_WASM_NUMERIC_SOURCES
+        "${CMAKE_CURRENT_LIST_DIR}/lapack_fallback.cc")
+elseif(JAGS_WASM_NUMERIC_BACKEND STREQUAL "openblas")
+    if(NOT JAGS_WASM_OPENBLAS_LIB OR NOT EXISTS "${JAGS_WASM_OPENBLAS_LIB}")
+        message(FATAL_ERROR
+            "JAGS_WASM_NUMERIC_BACKEND=openblas requires JAGS_WASM_OPENBLAS_LIB")
+    endif()
+    if(NOT JAGS_WASM_LAPACK_EXTRA_LIB OR NOT EXISTS "${JAGS_WASM_LAPACK_EXTRA_LIB}")
+        message(FATAL_ERROR
+            "JAGS_WASM_NUMERIC_BACKEND=openblas requires JAGS_WASM_LAPACK_EXTRA_LIB")
+    endif()
+else()
+    message(FATAL_ERROR
+        "Unknown JAGS_WASM_NUMERIC_BACKEND: ${JAGS_WASM_NUMERIC_BACKEND}")
+endif()
+
 set(JAGS_SOURCES
     "${CMAKE_CURRENT_LIST_DIR}/jags_wasm.cc"
-    "${CMAKE_CURRENT_LIST_DIR}/lapack_fallback.cc"
+    ${JAGS_WASM_NUMERIC_SOURCES}
     "${JAGS_ROOT}/src/lib/Console.cc"
     "${JAGS_ROOT}/src/lib/version.cc")
 
@@ -71,6 +97,14 @@ target_compile_definitions(jags_wasm PRIVATE
 target_compile_options(jags_wasm PRIVATE
     $<$<COMPILE_LANGUAGE:C>:-std=c99>
     $<$<COMPILE_LANGUAGE:CXX>:-fexceptions>)
+
+if(JAGS_WASM_NUMERIC_BACKEND STREQUAL "openblas")
+    target_compile_options(jags_wasm PRIVATE -msimd128)
+    target_link_options(jags_wasm PRIVATE -msimd128)
+    target_link_libraries(jags_wasm PRIVATE
+        "${JAGS_WASM_LAPACK_EXTRA_LIB}"
+        "${JAGS_WASM_OPENBLAS_LIB}")
+endif()
 
 target_link_options(jags_wasm PRIVATE
     -fexceptions
