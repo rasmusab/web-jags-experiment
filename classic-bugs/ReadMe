@@ -1,0 +1,39 @@
+Classic BUGS examples
+---------------------
+
+Some of the BUGS examples have been modified to run with JAGS, and have
+been turned into a test suite.
+
+Each subdirectory contains a number of JAGS script files named test1.cmd,
+test2.cmd, ... etc. designed to run the examples as they were presented
+in the classic BUGS examples book.
+
+Volume 1 also contains R script files test1.R, test2.R to run the
+examples using the rjags interface from JAGS to R.
+
+Some of the examples have been modified. In such cases, there is a
+ReadMe file explaining the changes. Some examples cannot be run at all,
+and these are obviously not included in the testing process.
+
+make check  Will run all the examples and check the results against
+            the benchmark run.  The check ensures that the posterior
+            mean of the monitored nodes is not more than 0.15 standard
+            deviations away from the benchmark mean. This is a heuristic
+            test that could probably be improved.
+
+make Rcheck (Volume 1 only) Runs examples using the rjags interface.
+
+make checktime Runs all the examples and records the times in the file
+            "times" (replacing any existing file). The "times"
+            file records the directory name, the name of the command
+            file and the number of seconds in user mode and kernel
+            mode in separate columns.
+
+            This requires the GNU version of time.
+
+make clean  Cleans up any files that may have been created during
+            make check, or during debugging
+
+make bench  Creates new benchmark results
+
+make distclean Deletes the benchmark results

@@ -1,0 +1,7 @@
+This is JAGS (Just Another Gibbs Sampler), a program for analysis of
+Bayesian Graphical models by Gibbs Sampling. 
+
+The functionality of JAGS is based on the BUGS program created by the
+MRC Biostatistics Unit (http://www.mrc-bsu.cam.ac.uk). 
+
+JAGS is written in C++ and requires (since version 4.3.2) C++11 or above.

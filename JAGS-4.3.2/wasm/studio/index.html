@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>JAGS WASM Studio</title>
+    <link rel="stylesheet" href="./styles.css">
+    <script src="https://cdn.plot.ly/plotly-2.35.2.min.js" async></script>
+    <script src="../build/jags.js"></script>
+    <script src="./app.js" defer></script>
+  </head>
+  <body>
+    <main class="shell">
+      <section class="left-pane">
+        <header class="topbar">
+          <div>
+            <h1>JAGS Studio</h1>
+            <p>Editable BUGS model, ragged table data, automatic monitors</p>
+          </div>
+          <button id="reset-button" type="button">Reset</button>
+        </header>
+
+        <label class="model-field">
+          <span>Model</span>
+          <textarea id="model-input" spellcheck="false"></textarea>
+        </label>
+
+        <section class="data-section">
+          <div class="section-heading">
+            <div>
+              <span>Data Table</span>
+              <p>First row names variables. Blank cells are ignored.</p>
+            </div>
+            <div class="table-actions">
+              <button id="add-row-button" type="button">Add Row</button>
+              <button id="add-column-button" type="button">Add Column</button>
+            </div>
+          </div>
+          <div class="table-wrap">
+            <table id="data-table" aria-label="JAGS data table"></table>
+          </div>
+        </section>
+
+        <section class="run-strip">
+          <label>
+            <span>Iterations</span>
+            <input id="iterations-input" type="number" min="10" max="100000" step="10" value="1500">
+          </label>
+          <label>
+            <span>Seed</span>
+            <input id="seed-input" type="number" min="1" step="1" value="20260505">
+          </label>
+          <button id="run-button" type="button" disabled>Run</button>
+        </section>
+
+        <div id="status" role="status">Loading JAGS runtime...</div>
+      </section>
+
+      <section class="right-pane">
+        <div class="metrics">
+          <div>
+            <span>Parameters</span>
+            <strong id="parameter-count">0</strong>
+          </div>
+          <div>
+            <span>Samples</span>
+            <strong id="sample-count">0</strong>
+          </div>
+          <div>
+            <span>Elapsed</span>
+            <strong id="elapsed-time">0 ms</strong>
+          </div>
+        </div>
+        <div id="summary-table" class="summary-table"></div>
+        <div id="plots" class="plots"></div>
+      </section>
+    </main>
+  </body>
+</html>

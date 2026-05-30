@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>JAGS WASM Regression Demo</title>
+    <link rel="stylesheet" href="./styles.css">
+    <script src="https://cdn.plot.ly/plotly-2.35.2.min.js"></script>
+    <script src="../build/jags.js"></script>
+    <script src="./app.js" defer></script>
+  </head>
+  <body>
+    <main class="app-shell">
+      <section class="workspace">
+        <aside class="editor-panel">
+          <div class="bar">
+            <div>
+              <h1>JAGS WASM</h1>
+              <p>Browser regression runner</p>
+            </div>
+            <button id="reset-example" type="button">Reset</button>
+          </div>
+
+          <label class="field">
+            <span>Model</span>
+            <textarea id="model-input" spellcheck="false"></textarea>
+          </label>
+
+          <label class="field">
+            <span>Data JSON</span>
+            <textarea id="data-input" spellcheck="false"></textarea>
+          </label>
+
+          <div class="controls">
+            <label>
+              <span>Iterations</span>
+              <input id="iterations-input" type="number" min="10" max="50000" step="10" value="1500">
+            </label>
+            <label>
+              <span>Seed</span>
+              <input id="seed-input" type="number" min="1" step="1" value="20260505">
+            </label>
+            <label>
+              <span>Monitors</span>
+              <input id="monitors-input" type="text" value="alpha, beta, sigma">
+            </label>
+          </div>
+
+          <div class="actions">
+            <button id="run-button" type="button" disabled>Run</button>
+            <span id="status" role="status">Loading JAGS runtime...</span>
+          </div>
+        </aside>
+
+        <section class="results-panel">
+          <div class="summary-strip">
+            <div>
+              <span>Iteration</span>
+              <strong id="iteration-value">0</strong>
+            </div>
+            <div>
+              <span>Samples</span>
+              <strong id="sample-value">0</strong>
+            </div>
+            <div>
+              <span>Elapsed</span>
+              <strong id="elapsed-value">0 ms</strong>
+            </div>
+          </div>
+
+          <div id="summary-table" class="summary-table"></div>
+          <div id="regression-plot" class="plot large-plot"></div>
+          <div id="trace-grid" class="plot-grid"></div>
+          <div id="hist-grid" class="plot-grid"></div>
+        </section>
+      </section>
+    </main>
+  </body>
+</html>
