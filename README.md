@@ -1,10 +1,12 @@
 # JAGS WebAssembly Experiment
 
 > [!WARNING]
-> This is an unofficial experiment. It is not production ready, not a supported
-> JAGS distribution, and should not be relied on for real statistical work,
-> published analyses, regulated workflows, or any decision where numerical
-> correctness matters. Treat the browser output as a technical demo only.
+> This is an unofficial **100% vibecoded** experiment. 
+> This was basically me asking my friendly neighbourhood LLM to 
+> "PLease compile JAGS to wasm", and to my surprize it mostly seems to work.
+> But! It is not anything close to a production ready,
+> not a supported JAGS distribution, and should not be relied on for anything.
+> Treat the browser output as a technical demo only.
 
 ## Important Attribution And Status
 
