@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>Minimal JAGS WASM server experiment</title>
+    <script src="../../dist/openblas/jags.js"></script>
+  </head>
+  <body>
+    <h1>Minimal JAGS WASM server experiment</h1>
+    <p>Unofficial experiment. Do not rely on this output for real analyses.</p>
+    <pre id="output">Running...</pre>
+
+    <script>
+      const output = document.querySelector("#output");
+
+      function write(value) {
+        output.textContent = typeof value === "string" ? value : JSON.stringify(value, null, 2);
+      }
+
+      function mean(values) {
+        return values.reduce((total, value) => total + value, 0) / values.length;
+      }
+
+      async function run() {
+        const Module = await createJagsModule({
+          locateFile: (path) => path.endsWith(".wasm") ? `../../dist/openblas/${path}` : path,
+        });
+
+        const api = {
+          create: Module.cwrap("jags_create", "number", []),
+          destroy: Module.cwrap("jags_destroy", null, ["number"]),
+          lastError: Module.cwrap("jags_last_error", "string", ["number"]),
+          setSeed: Module.cwrap("jags_set_seed", "number", ["number"]),
+          checkModel: Module.cwrap("jags_check_model", "number", ["number", "string"]),
+          clearData: Module.cwrap("jags_clear_data", "number", ["number"]),
+          setDataRaw: Module.cwrap("jags_set_data", "number",
+            ["number", "string", "number", "number", "number", "number"]),
+          compile: Module.cwrap("jags_compile", "number", ["number", "number", "number"]),
+          initialize: Module.cwrap("jags_initialize", "number", ["number"]),
+          adaptOff: Module.cwrap("jags_adapt_off", "number", ["number"]),
+          update: Module.cwrap("jags_update", "number", ["number", "number"]),
+          setMonitor: Module.cwrap("jags_set_monitor", "number",
+            ["number", "string", "number", "string"]),
+          dumpMonitors: Module.cwrap("jags_dump_monitors", "string",
+            ["number", "string", "number"]),
+          iteration: Module.cwrap("jags_iteration", "number", ["number"]),
+        };
+
+        const handle = api.create();
+
+        function requireOk(value, step) {
+          if (!value) {
+            throw new Error(`${step}: ${api.lastError(handle) || "unknown error"}`);
+          }
+        }
+
+        function setData(name, dims, values) {
+          const dimsPtr = Module._malloc(dims.length * 4);
+          const valuesPtr = Module._malloc(values.length * 8);
+          try {
+            Module.HEAPU32.set(dims, dimsPtr / 4);
+            Module.HEAPF64.set(values, valuesPtr / 8);
+            requireOk(
+              api.setDataRaw(handle, name, dimsPtr, dims.length, valuesPtr, values.length),
+              `set data ${name}`,
+            );
+          } finally {
+            Module._free(valuesPtr);
+            Module._free(dimsPtr);
+          }
+        }
+
+        try {
+          requireOk(api.setSeed(1234), "set seed");
+          requireOk(api.clearData(handle), "clear data");
+          setData("N", [1], [5]);
+          setData("y", [5], [1.1, 0.9, 1.0, 1.2, 0.8]);
+
+          const model = `
+model {
+  for (i in 1:N) {
+    y[i] ~ dnorm(mu, tau)
+  }
+  mu ~ dnorm(0, 1.0E-6)
+  tau ~ dgamma(0.001, 0.001)
+}`;
+
+          requireOk(api.checkModel(handle, model), "check model");
+          requireOk(api.compile(handle, 1, 0), "compile");
+          requireOk(api.initialize(handle), "initialize");
+          requireOk(api.update(handle, 500), "adapt/burn-in");
+          requireOk(api.adaptOff(handle), "adapt off");
+          requireOk(api.setMonitor(handle, "mu", 1, "trace"), "set monitor mu");
+          requireOk(api.setMonitor(handle, "tau", 1, "trace"), "set monitor tau");
+          requireOk(api.update(handle, 1000), "sample");
+
+          const monitors = JSON.parse(api.dumpMonitors(handle, "trace", 0));
+          const mu = monitors.mu.values.map(Number);
+          const tau = monitors.tau.values.map(Number);
+          write({
+            status: "ok",
+            iteration: api.iteration(handle),
+            samples: mu.length,
+            posteriorMean: {
+              mu: mean(mu),
+              tau: mean(tau),
+            },
+          });
+        } finally {
+          api.destroy(handle);
+        }
+      }
+
+      run().catch((error) => write(error.stack || error.message));
+    </script>
+  </body>
+</html>

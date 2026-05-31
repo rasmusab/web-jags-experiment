@@ -15,11 +15,11 @@ jags_wasm_find_file <- function(relative_path) {
 }
 
 jags_wasm_default_js <- function() {
-  Sys.getenv("JAGS_WASM_JS", jags_wasm_find_file("JAGS-4.3.2/wasm/build/jags.js"))
+  Sys.getenv("JAGS_WASM_JS", jags_wasm_find_file("dist/openblas/jags.js"))
 }
 
 jags_wasm_default_wasm <- function() {
-  Sys.getenv("JAGS_WASM_WASM", jags_wasm_find_file("JAGS-4.3.2/wasm/build/jags.wasm"))
+  Sys.getenv("JAGS_WASM_WASM", jags_wasm_find_file("dist/openblas/jags.wasm"))
 }
 
 jags_wasm_v8_context <- function(js_path = jags_wasm_default_js(),

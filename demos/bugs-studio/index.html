@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Experimental JAGS Classic BUGS Studio</title>
+    <link rel="stylesheet" href="./styles.css">
+    <script src="https://cdn.plot.ly/plotly-2.35.2.min.js" async></script>
+    <script src="./classic-bugs-examples.js"></script>
+    <script src="./app.js" defer></script>
+  </head>
+  <body>
+    <main class="shell">
+      <section class="left-pane">
+        <header class="topbar">
+          <div>
+            <h1>Experimental Classic BUGS Studio</h1>
+            <p>Unofficial JAGS-to-WASM experiment. Do not rely on this for real analyses.</p>
+          </div>
+          <button id="reset-button" type="button">Reset Example</button>
+        </header>
+
+        <section class="run-strip">
+          <label>
+            <span>Chains</span>
+            <input id="chains-input" type="number" min="1" step="1" value="2">
+          </label>
+          <label>
+            <span>Adapt</span>
+            <input id="adapt-input" type="number" min="0" step="10" value="1000">
+          </label>
+          <label>
+            <span>Burn-in</span>
+            <input id="burnin-input" type="number" min="0" step="100" value="5000">
+          </label>
+          <label>
+            <span>Samples</span>
+            <input id="iterations-input" type="number" min="1" step="100" value="5000">
+          </label>
+          <label>
+            <span>Thin</span>
+            <input id="thin-input" type="number" min="1" step="1" value="1">
+          </label>
+          <label>
+            <span>Seed</span>
+            <input id="seed-input" type="number" min="1" step="1" value="20260531">
+          </label>
+          <button id="run-button" type="button" disabled>Run</button>
+        </section>
+
+        <div id="status" role="status">Loading JAGS runtime...</div>
+
+        <label class="field compact">
+          <span>BUGS Example</span>
+          <select id="example-select"></select>
+        </label>
+
+        <label class="field model-field">
+          <span>Model</span>
+          <textarea id="model-input" spellcheck="false"></textarea>
+        </label>
+
+        <label class="field data-field">
+          <span>Data JSON</span>
+          <textarea id="data-input" spellcheck="false"></textarea>
+        </label>
+
+        <label class="field inits-field">
+          <span>Initial Values JSON</span>
+          <textarea id="inits-input" spellcheck="false"></textarea>
+        </label>
+      </section>
+
+      <section class="right-pane">
+        <div class="metrics">
+          <div>
+            <span>Parameters</span>
+            <strong id="parameter-count">0</strong>
+          </div>
+          <div>
+            <span>Samples</span>
+            <strong id="sample-count">0</strong>
+          </div>
+          <div>
+            <span>Elapsed</span>
+            <strong id="elapsed-time">0 ms</strong>
+          </div>
+        </div>
+        <div id="summary-table" class="summary-table"></div>
+        <div id="plots" class="plots"></div>
+      </section>
+    </main>
+  </body>
+</html>

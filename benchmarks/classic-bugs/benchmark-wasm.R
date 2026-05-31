@@ -1,5 +1,5 @@
 source("classic-bugs/R/discover-classic-bugs.R")
-source("JAGS-4.3.2/wasm/r/jags_wasm_v8.R")
+source("wasm-port/r/jags_wasm_v8.R")
 
 `%||%` <- function(x, y) if (is.null(x)) y else x
 
@@ -136,10 +136,18 @@ benchmark_classic_bugs <- function(root = "classic-bugs",
                                    ids = NULL,
                                    max_cases = Inf,
                                    iter_scale = 1,
-                                   min_iter = 200,
+                                   min_adapt = 1000,
+                                   min_burnin = 10000,
+                                   min_samples = 10000,
+                                   min_iter = NULL,
                                    seed = 1234,
                                    tolerance = 0.5,
-                                   out_dir = file.path(root, "results")) {
+                                   out_dir = file.path("benchmarks", "classic-bugs", "results")) {
+  if (!is.null(min_iter)) {
+    min_adapt <- min_iter
+    min_burnin <- min_iter
+    min_samples <- min_iter
+  }
   dir.create(out_dir, recursive = TRUE, showWarnings = FALSE)
   index <- discover_classic_bugs(root)
   index <- index[is.na(index$discovery_error), , drop = FALSE]
@@ -163,9 +171,9 @@ benchmark_classic_bugs <- function(root = "classic-bugs",
     monitors <- split_field(case$monitors)
     model_text <- readLines(case$model_file, warn = FALSE)
 
-    n_adapt <- scale_iterations(case$n_adapt, iter_scale, min_iter)
-    burnin <- scale_iterations(case$burnin, iter_scale, min_iter)
-    n_iter <- scale_iterations(case$n_iter, iter_scale, min_iter)
+    n_adapt <- scale_iterations(case$n_adapt, iter_scale, min_adapt)
+    burnin <- scale_iterations(case$burnin, iter_scale, min_burnin)
+    n_iter <- scale_iterations(case$n_iter, iter_scale, min_samples)
 
     rjags_result <- tryCatch(
       run_rjags_case(case, data, inits, monitors, n_adapt, burnin, n_iter,
@@ -259,7 +267,10 @@ if (sys.nframe() == 0) {
   ids <- if (!is.null(args$ids)) strsplit(args$ids, ",", fixed = TRUE)[[1]] else NULL
   max_cases <- if (!is.null(args$max_cases)) as.numeric(args$max_cases) else Inf
   iter_scale <- if (!is.null(args$iter_scale)) as.numeric(args$iter_scale) else 1
-  min_iter <- if (!is.null(args$min_iter)) as.numeric(args$min_iter) else 200
+  min_iter <- if (!is.null(args$min_iter)) as.numeric(args$min_iter) else NULL
+  min_adapt <- if (!is.null(args$min_adapt)) as.numeric(args$min_adapt) else 1000
+  min_burnin <- if (!is.null(args$min_burnin)) as.numeric(args$min_burnin) else 10000
+  min_samples <- if (!is.null(args$min_samples)) as.numeric(args$min_samples) else 10000
   seed <- if (!is.null(args$seed)) as.integer(args$seed) else 1234L
   tolerance <- if (!is.null(args$tolerance)) as.numeric(args$tolerance) else 0.5
 
@@ -268,6 +279,9 @@ if (sys.nframe() == 0) {
     ids = ids,
     max_cases = max_cases,
     iter_scale = iter_scale,
+    min_adapt = min_adapt,
+    min_burnin = min_burnin,
+    min_samples = min_samples,
     min_iter = min_iter,
     seed = seed,
     tolerance = tolerance

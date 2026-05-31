@@ -1,0 +1,277 @@
+:root {
+  --ink: #16181b;
+  --muted: #6d756f;
+  --paper: #fffdf7;
+  --panel: rgba(255, 255, 255, 0.88);
+  --line: #cbd8cf;
+  --accent: #0f766e;
+  --accent-2: #b54822;
+  --wash: #e9f2ed;
+  --shadow: 0 22px 65px rgba(26, 38, 33, 0.16);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background:
+    radial-gradient(circle at 15% 12%, rgba(181, 72, 34, 0.16), transparent 28rem),
+    radial-gradient(circle at 88% 0%, rgba(15, 118, 110, 0.20), transparent 30rem),
+    linear-gradient(135deg, #edf4ef 0%, #f8f3e8 50%, #d9e7e0 100%);
+  color: var(--ink);
+  font-family: "Avenir Next", "Segoe UI", sans-serif;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+
+button {
+  border: 0;
+  border-radius: 10px;
+  background: var(--accent);
+  color: white;
+  cursor: pointer;
+  font-weight: 700;
+  padding: 13px 18px;
+}
+
+button:disabled {
+  background: #9aa7a1;
+  cursor: wait;
+}
+
+.shell {
+  display: grid;
+  gap: 28px;
+  grid-template-columns: minmax(420px, 0.92fr) minmax(520px, 1.08fr);
+  min-height: 100vh;
+  padding: 30px;
+}
+
+.left-pane,
+.right-pane {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  box-shadow: var(--shadow);
+  padding: 28px;
+}
+
+.topbar {
+  align-items: flex-start;
+  display: flex;
+  gap: 18px;
+  justify-content: space-between;
+}
+
+h1 {
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: clamp(2.1rem, 4vw, 3.2rem);
+  line-height: 0.94;
+  margin: 0 0 8px;
+}
+
+p {
+  color: var(--muted);
+  margin: 0;
+}
+
+.field {
+  display: grid;
+  gap: 8px;
+  margin-top: 22px;
+}
+
+.field span,
+.run-strip span {
+  color: #5c665f;
+  font-size: 0.76rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+select,
+input,
+textarea {
+  background: rgba(255, 255, 255, 0.78);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  color: var(--ink);
+  outline: none;
+}
+
+select,
+input {
+  min-height: 48px;
+  padding: 10px 12px;
+  width: 100%;
+}
+
+textarea {
+  line-height: 1.42;
+  padding: 14px;
+  resize: vertical;
+  white-space: pre;
+}
+
+textarea:focus,
+input:focus,
+select:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(15, 118, 110, 0.12);
+}
+
+.model-field textarea {
+  min-height: 360px;
+}
+
+.data-field textarea {
+  min-height: 260px;
+}
+
+.inits-field textarea {
+  min-height: 160px;
+}
+
+.run-strip {
+  align-items: end;
+  border-top: 2px solid var(--line);
+  display: grid;
+  gap: 14px;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  margin-top: 22px;
+  padding-top: 22px;
+}
+
+.run-strip label {
+  display: grid;
+  gap: 7px;
+  min-width: 0;
+}
+
+.checkbox-label {
+  align-items: center;
+  display: flex !important;
+  gap: 9px !important;
+  min-height: 48px;
+}
+
+#run-button {
+  min-height: 48px;
+  width: 100%;
+}
+
+.checkbox-label input {
+  min-height: auto;
+  width: 18px;
+}
+
+.checkbox-label span {
+  text-transform: none;
+}
+
+#status {
+  color: var(--muted);
+  margin-top: 16px;
+}
+
+#status.error {
+  color: var(--accent-2);
+  font-weight: 700;
+}
+
+.metrics {
+  display: grid;
+  gap: 18px;
+  grid-template-columns: repeat(3, 1fr);
+}
+
+.metrics div {
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 18px 20px;
+}
+
+.metrics span {
+  color: #5c665f;
+  display: block;
+  font-size: 0.76rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  margin-bottom: 8px;
+  text-transform: uppercase;
+}
+
+.metrics strong {
+  font-size: 2rem;
+}
+
+.summary-table {
+  border-top: 2px solid var(--line);
+  margin-top: 26px;
+  overflow-x: auto;
+  padding-top: 22px;
+}
+
+table {
+  border-collapse: collapse;
+  min-width: 100%;
+}
+
+th,
+td {
+  border-bottom: 1px solid #dce5df;
+  padding: 9px 10px;
+  text-align: right;
+}
+
+th:first-child,
+td:first-child {
+  text-align: left;
+}
+
+.plots {
+  display: grid;
+  gap: 14px;
+  margin-top: 18px;
+}
+
+.parameter-card {
+  display: grid;
+  gap: 14px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.chart {
+  min-height: 284px;
+}
+
+@media (max-width: 1180px) {
+  .shell {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 760px) {
+  .shell {
+    padding: 10px;
+  }
+
+  .topbar {
+    flex-direction: column;
+  }
+
+  .run-strip,
+  .metrics,
+  .parameter-card {
+    grid-template-columns: 1fr;
+  }
+}

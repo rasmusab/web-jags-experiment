@@ -1,7 +1,7 @@
 const path = require("path");
 
 const modulePath = process.env.JAGS_WASM_MODULE ||
-  path.join(__dirname, "build", "jags.js");
+  path.join(__dirname, "..", "dist", "openblas", "jags.js");
 
 const createJagsModule = require(modulePath);
 

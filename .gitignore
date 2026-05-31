@@ -1,3 +1,8 @@
 .DS_Store
 classic-bugs/results/
-JAGS-4.3.2/wasm/third_party/
+benchmarks/classic-bugs/results/
+build/
+wasm-port/build/
+wasm-port/build-*/
+wasm-port/third_party/
+demos/bugs-studio/browser-smoke-results-*.json

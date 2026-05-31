@@ -1,9 +1,4 @@
-helper <- if (file.exists("JAGS-4.3.2/wasm/r/jags_wasm_v8.R")) {
-  "JAGS-4.3.2/wasm/r/jags_wasm_v8.R"
-} else {
-  "wasm/r/jags_wasm_v8.R"
-}
-source(helper)
+source("wasm-port/r/jags_wasm_v8.R")
 
 context <- jags_wasm_v8_context()
 

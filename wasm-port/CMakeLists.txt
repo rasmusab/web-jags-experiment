@@ -2,7 +2,9 @@ cmake_minimum_required(VERSION 3.20)
 
 project(jags_wasm LANGUAGES C CXX)
 
-set(JAGS_ROOT "${CMAKE_CURRENT_LIST_DIR}/..")
+set(JAGS_ROOT "${CMAKE_CURRENT_LIST_DIR}/../JAGS-4.3.2" CACHE PATH
+    "Path to the JAGS source tree")
+get_filename_component(JAGS_ROOT "${JAGS_ROOT}" ABSOLUTE)
 
 set(CMAKE_C_STANDARD 99)
 set(CMAKE_CXX_STANDARD 11)
@@ -29,7 +31,7 @@ endfunction()
 set(JAGS_WASM_NUMERIC_SOURCES)
 if(JAGS_WASM_NUMERIC_BACKEND STREQUAL "fallback")
     list(APPEND JAGS_WASM_NUMERIC_SOURCES
-        "${CMAKE_CURRENT_LIST_DIR}/lapack_fallback.cc")
+        "${CMAKE_CURRENT_LIST_DIR}/src/lapack_fallback.cc")
 elseif(JAGS_WASM_NUMERIC_BACKEND STREQUAL "openblas")
     if(NOT JAGS_WASM_OPENBLAS_LIB OR NOT EXISTS "${JAGS_WASM_OPENBLAS_LIB}")
         message(FATAL_ERROR
@@ -45,7 +47,7 @@ else()
 endif()
 
 set(JAGS_SOURCES
-    "${CMAKE_CURRENT_LIST_DIR}/jags_wasm.cc"
+    "${CMAKE_CURRENT_LIST_DIR}/src/jags_wasm.cc"
     ${JAGS_WASM_NUMERIC_SOURCES}
     "${JAGS_ROOT}/src/lib/Console.cc"
     "${JAGS_ROOT}/src/lib/version.cc")
@@ -80,6 +82,7 @@ add_executable(jags_wasm ${JAGS_SOURCES})
 
 target_include_directories(jags_wasm PRIVATE
     "${CMAKE_CURRENT_LIST_DIR}"
+    "${CMAKE_CURRENT_LIST_DIR}/src"
     "${JAGS_ROOT}/src/include"
     "${JAGS_ROOT}/src/lib"
     "${JAGS_ROOT}/src/modules/base"
